@@ -97,12 +97,17 @@ export default function AdminPage() {
   async function handleCreateTeam() {
     if (!teamName) return
     
+    console.log('Creating team:', teamName)
     const result = await createTeam(teamName)
+    console.log('Create result:', result)
+    
     if (!result.error) {
       setShowTeamModal(false)
       setTeamName('')
       // Recarregar teams diretamente
+      console.log('Reloading teams...')
       const { data } = await getAllTeams()
+      console.log('Teams loaded:', data)
       setTeams(data || [])
       alert('Equipo creado con éxito')
     } else {
