@@ -68,8 +68,9 @@ export async function invitePerson(email: string, fullName: string, teamIds: str
 
   // Agregar a equipos
   if (authData.user && teamIds.length > 0) {
+    const userId = authData.user.id // Garantir que não é null
     const memberships = teamIds.map(teamId => ({
-      profile_id: authData.user.id,
+      profile_id: userId,
       team_id: teamId,
       status: 'active' as const
     }))
