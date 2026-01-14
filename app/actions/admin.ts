@@ -162,7 +162,7 @@ export async function createTeam(name: string) {
     return { error: error.message }
   }
 
-  revalidatePath('/admin/teams')
+  revalidatePath('/admin')
   return { data }
 }
 
