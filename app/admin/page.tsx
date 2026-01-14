@@ -46,7 +46,9 @@ export default function AdminPage() {
   }, [])
 
   useEffect(() => {
+    console.log('useEffect triggered - isAdminUser:', isAdminUser, 'activeTab:', activeTab)
     if (isAdminUser) {
+      console.log('Calling loadData...')
       loadData()
     }
   }, [isAdminUser, activeTab])
@@ -62,17 +64,22 @@ export default function AdminPage() {
   }
 
   async function loadData() {
+    console.log('=== loadData CALLED - activeTab:', activeTab)
     const supabase = createClient()
     
     if (activeTab === 'people') {
+      console.log('Loading people...')
       const { data } = await getAllPeople()
       setPeople(data || [])
     } else if (activeTab === 'teams') {
+      console.log('Loading teams from client...')
       // Buscar teams diretamente via cliente para evitar cache
       const { data: teamsData, error } = await supabase
         .from('teams')
         .select('*')
         .order('name')
+      
+      console.log('Teams query result:', { teamsData, error })
       
       if (!error && teamsData) {
         // Contar membros para cada team
