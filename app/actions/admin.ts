@@ -10,7 +10,7 @@ export async function isAdmin() {
   const supabase = await createServerClient()
   const { data: { user } } = await supabase.auth.getUser()
   
-  if (!user) return false
+  if (!user) return { isAdmin: false }
 
   const { data } = await supabase
     .from('profiles')
@@ -18,7 +18,7 @@ export async function isAdmin() {
     .eq('id', user.id)
     .single()
 
-  return data?.role === 'admin'
+  return { isAdmin: data?.role === 'admin' }
 }
 
 /**
@@ -44,7 +44,7 @@ export async function getCurrentProfile() {
  */
 export async function invitePerson(email: string, fullName: string, teamIds: string[]) {
   const admin = await isAdmin()
-  if (!admin) {
+  if (!admin.isAdmin) {
     return { error: 'No autorizado' }
   }
 
@@ -90,7 +90,7 @@ export async function updateMembershipStatus(
   status: 'active' | 'inactive'
 ) {
   const admin = await isAdmin()
-  if (!admin) {
+  if (!admin.isAdmin) {
     return { error: 'No autorizado' }
   }
 
@@ -120,7 +120,7 @@ export async function updateMembershipStatus(
  */
 export async function updateUserRole(userId: string, role: 'admin' | 'member') {
   const admin = await isAdmin()
-  if (!admin) {
+  if (!admin.isAdmin) {
     return { error: 'No autorizado' }
   }
 
@@ -146,7 +146,7 @@ export async function updateUserRole(userId: string, role: 'admin' | 'member') {
  */
 export async function createTeam(name: string) {
   const admin = await isAdmin()
-  if (!admin) {
+  if (!admin.isAdmin) {
     return { error: 'No autorizado' }
   }
 
@@ -171,7 +171,7 @@ export async function createTeam(name: string) {
  */
 export async function updateTeam(id: string, name: string) {
   const admin = await isAdmin()
-  if (!admin) {
+  if (!admin.isAdmin) {
     return { error: 'No autorizado' }
   }
 
@@ -198,7 +198,7 @@ export async function updateTeam(id: string, name: string) {
  */
 export async function addTeamMember(teamId: string, profileId: string) {
   const admin = await isAdmin()
-  if (!admin) {
+  if (!admin.isAdmin) {
     return { error: 'No autorizado' }
   }
 
@@ -232,7 +232,7 @@ export async function createHoliday(
   endDate: string
 ) {
   const admin = await isAdmin()
-  if (!admin) {
+  if (!admin.isAdmin) {
     return { error: 'No autorizado' }
   }
 
@@ -270,7 +270,7 @@ export async function updateHoliday(
   endDate: string
 ) {
   const admin = await isAdmin()
-  if (!admin) {
+  if (!admin.isAdmin) {
     return { error: 'No autorizado' }
   }
 
@@ -301,7 +301,7 @@ export async function updateHoliday(
  */
 export async function deleteHoliday(id: string) {
   const admin = await isAdmin()
-  if (!admin) {
+  if (!admin.isAdmin) {
     return { error: 'No autorizado' }
   }
 
@@ -326,7 +326,7 @@ export async function deleteHoliday(id: string) {
  */
 export async function getAllPeople() {
   const admin = await isAdmin()
-  if (!admin) {
+  if (!admin.isAdmin) {
     return { data: [], error: 'No autorizado' }
   }
 
@@ -361,7 +361,7 @@ export async function getAllPeople() {
  */
 export async function getAllTeams() {
   const admin = await isAdmin()
-  if (!admin) {
+  if (!admin.isAdmin) {
     return { data: [], error: 'No autorizado' }
   }
 
