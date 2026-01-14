@@ -62,14 +62,41 @@ export default function AdminPage() {
   }
 
   async function loadData() {
+    const supabase = createClient()
+    
     if (activeTab === 'people') {
       const { data } = await getAllPeople()
       setPeople(data || [])
     } else if (activeTab === 'teams') {
-      const { data } = await getAllTeams()
-      setTeams(data || [])
+      // Buscar teams diretamente via cliente para evitar cache
+      const { data: teamsData, error } = await supabase
+        .from('teams')
+        .select('*')
+        .order('name')
+      
+      if (!error && teamsData) {
+        // Contar membros para cada team
+        const teamsWithCount = await Promise.all(
+          teamsData.map(async (team) => {
+            const { count } = await supabase
+              .from('team_memberships')
+              .select('*', { count: 'exact', head: true })
+              .eq('team_id', team.id)
+              .eq('status', 'active')
+            
+            return {
+              ...team,
+              member_count: count || 0
+            }
+          })
+        )
+        console.log('Teams loaded from client:', teamsWithCount)
+        setTeams(teamsWithCount)
+      } else {
+        console.error('Error loading teams:', error)
+        setTeams([])
+      }
     } else if (activeTab === 'holidays') {
-      const supabase = createClient()
       const { data } = await supabase
         .from('holidays')
         .select('*')
@@ -97,18 +124,13 @@ export default function AdminPage() {
   async function handleCreateTeam() {
     if (!teamName) return
     
-    console.log('Creating team:', teamName)
     const result = await createTeam(teamName)
-    console.log('Create result:', result)
     
     if (!result.error) {
       setShowTeamModal(false)
       setTeamName('')
-      // Recarregar teams diretamente
-      console.log('Reloading teams...')
-      const { data } = await getAllTeams()
-      console.log('Teams loaded:', data)
-      setTeams(data || [])
+      // Recarregar dados
+      await loadData()
       alert('Equipo creado con éxito')
     } else {
       alert(`Error: ${result.error}`)
