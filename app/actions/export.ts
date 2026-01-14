@@ -93,7 +93,7 @@ export async function exportAbsencesToExcel(params: ExportParams) {
 
   // Generar buffer
   const buffer = await workbook.xlsx.writeBuffer()
-  const base64 = buffer.toString('base64')
+  const base64 = Buffer.from(buffer).toString('base64')
 
   return {
     data: {
