@@ -367,25 +367,31 @@ export async function getAllTeams() {
 
   const supabase = await createServerClient()
 
-  const { data, error } = await supabase
+  // Buscar teams
+  const { data: teamsData, error: teamsError } = await supabase
     .from('teams')
-    .select(`
-      *,
-      team_memberships (
-        id,
-        status,
-        profile:profile_id (
-          id,
-          full_name,
-          email
-        )
-      )
-    `)
+    .select('*')
     .order('name')
 
-  if (error) {
-    return { data: [], error: error.message }
+  if (teamsError) {
+    return { data: [], error: teamsError.message }
   }
 
-  return { data: data || [], error: null }
+  // Para cada team, contar membros
+  const teamsWithCount = await Promise.all(
+    (teamsData || []).map(async (team) => {
+      const { count } = await supabase
+        .from('team_memberships')
+        .select('*', { count: 'exact', head: true })
+        .eq('team_id', team.id)
+        .eq('status', 'active')
+      
+      return {
+        ...team,
+        member_count: count || 0
+      }
+    })
+  )
+
+  return { data: teamsWithCount, error: null }
 }
