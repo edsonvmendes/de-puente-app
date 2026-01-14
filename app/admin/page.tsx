@@ -101,7 +101,9 @@ export default function AdminPage() {
     if (!result.error) {
       setShowTeamModal(false)
       setTeamName('')
-      loadData()
+      // Recarregar teams diretamente
+      const { data } = await getAllTeams()
+      setTeams(data || [])
       alert('Equipo creado con éxito')
     } else {
       alert(`Error: ${result.error}`)
