@@ -81,7 +81,7 @@ export default function AdminPage() {
   async function handleInvite() {
     if (!inviteEmail || !inviteName) return
     
-    const result = await invitePerson(inviteEmail, inviteName, inviteRole)
+    const result = await invitePerson(inviteEmail, inviteName, []) // Passar array vazio por enquanto
     if (!result.error) {
       setShowInviteModal(false)
       setInviteEmail('')
@@ -111,11 +111,7 @@ export default function AdminPage() {
   async function handleCreateHoliday() {
     if (!holidayName || !holidayStart || !holidayEnd) return
     
-    const result = await createHoliday({
-      name: holidayName,
-      startDate: holidayStart,
-      endDate: holidayEnd
-    })
+    const result = await createHoliday(holidayName, holidayStart, holidayEnd)
     
     if (!result.error) {
       setShowHolidayModal(false)
@@ -129,16 +125,17 @@ export default function AdminPage() {
     }
   }
 
-  async function handleToggleMembership(personId: string, teamId: string, currentStatus: string) {
-    const newStatus = currentStatus === 'active' ? 'inactive' : 'active'
-    const result = await updateMembershipStatus(personId, teamId, newStatus)
-    
-    if (!result.error) {
-      loadData()
-    } else {
-      alert(`Error: ${result.error}`)
-    }
-  }
+  // Função desabilitada temporariamente - necessita refatoração
+  // async function handleToggleMembership(personId: string, teamId: string, currentStatus: string) {
+  //   const newStatus = currentStatus === 'active' ? 'inactive' : 'active'
+  //   const result = await updateMembershipStatus(membershipId, newStatus)
+  //   
+  //   if (!result.error) {
+  //     loadData()
+  //   } else {
+  //     alert(`Error: ${result.error}`)
+  //   }
+  // }
 
   if (loading) {
     return (
