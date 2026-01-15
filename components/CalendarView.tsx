@@ -6,7 +6,10 @@ import dayGridPlugin from '@fullcalendar/daygrid'
 import timeGridPlugin from '@fullcalendar/timegrid'
 import interactionPlugin from '@fullcalendar/interaction'
 import esLocale from '@fullcalendar/core/locales/es'
+import ptLocale from '@fullcalendar/core/locales/pt'
+import enLocale from '@fullcalendar/core/locales/en-gb'
 import { getAbsenceInfo, HOLIDAY_CONFIG } from '@/lib/utils/absence-types'
+import { useLanguage } from './LanguageProvider'
 
 interface CalendarEvent {
   id: string
@@ -31,7 +34,26 @@ export default function CalendarView({
   onEventClick,
   onDateSelect
 }: CalendarViewProps) {
+  const { language } = useLanguage()
   const [events, setEvents] = useState<CalendarEvent[]>([])
+
+  // Mapear idioma para locale do FullCalendar
+  const localeMap = {
+    pt: ptLocale,
+    es: esLocale,
+    en: enLocale
+  }
+
+  const currentLocale = localeMap[language] || esLocale
+
+  // Textos dos botões por idioma
+  const buttonTexts = {
+    pt: { today: 'Hoje', month: 'Mês', week: 'Semana' },
+    es: { today: 'Hoy', month: 'Mes', week: 'Semana' },
+    en: { today: 'Today', month: 'Month', week: 'Week' }
+  }
+
+  const currentButtonText = buttonTexts[language] || buttonTexts.es
 
   useEffect(() => {
     // Convertir ausencias a eventos
@@ -83,17 +105,13 @@ export default function CalendarView({
       <FullCalendar
         plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
         initialView="dayGridMonth"
-        locale={esLocale}
+        locale={currentLocale}
         headerToolbar={{
           left: 'prev,next today',
           center: 'title',
-          right: 'dayGridMonth,timeGridWeek'
+          right: 'dayGridMonth'
         }}
-        buttonText={{
-          today: 'Hoy',
-          month: 'Mes',
-          week: 'Semana'
-        }}
+        buttonText={currentButtonText}
         events={events}
         eventClick={(info) => {
           info.jsEvent.preventDefault()

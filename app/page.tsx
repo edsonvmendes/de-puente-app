@@ -10,6 +10,7 @@ import AbsenceDetailModal from '@/components/AbsenceDetailModal'
 import TodayOffCard from '@/components/TodayOffCard'
 import ExportButton from '@/components/ExportButton'
 import LanguageSelector from '@/components/LanguageSelector'
+import { useLanguage } from '@/components/LanguageProvider'
 // import Header from '@/components/Header' // Temporariamente desabilitado
 import { CalendarSkeleton } from '@/components/Skeleton'
 import EmptyState from '@/components/EmptyState'
@@ -20,6 +21,7 @@ import { motion } from 'framer-motion'
 export default function HomePage() {
   const router = useRouter()
   const supabase = createClient()
+  const { t } = useLanguage()
 
   const [user, setUser] = useState<any>(null)
   const [profile, setProfile] = useState<any>(null)
@@ -210,20 +212,20 @@ export default function HomePage() {
                 onClick={async () => {
                   const supabase = createClient()
                   await supabase.auth.signOut()
-                  toast.success('Sesión cerrada')
+                  toast.success(t('toast.session_closed'))
                   router.push('/login')
                 }}
                 className="flex items-center gap-2 px-3 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md transition-colors"
-                title="Cerrar sesión"
+                title={t('button.logout')}
               >
-                <span className="text-sm">Salir</span>
+                <span className="text-sm">{t('button.logout')}</span>
               </button>
               <button
                 onClick={() => router.push('/resumen')}
                 className="flex items-center gap-2 px-4 py-2 bg-purple-600 dark:bg-purple-700 text-white rounded-md hover:bg-purple-700 dark:hover:bg-purple-600 transition-colors"
               >
                 <FileText size={16} />
-                <span className="hidden sm:inline">Resumen</span>
+                <span className="hidden sm:inline">{t('button.summary')}</span>
               </button>
               <ExportButton
                 teamIds={selectedTeamIds}
@@ -235,7 +237,7 @@ export default function HomePage() {
                 className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors font-medium shadow-sm"
               >
                 <Plus size={16} />
-                <span className="hidden sm:inline">Marcar ausencia</span>
+                <span className="hidden sm:inline">{t('button.mark_absence')}</span>
               </button>
             </div>
           </div>
@@ -244,7 +246,7 @@ export default function HomePage() {
           {userTeams.length > 1 && (
             <div className="mb-4">
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Filtrar por equipo:
+                {t('calendar.filter_teams')}
               </label>
               <div className="flex flex-wrap gap-2">
                 <button
