@@ -10,6 +10,7 @@ import AbsenceDetailModal from '@/components/AbsenceDetailModal'
 import TodayOffCard from '@/components/TodayOffCard'
 import ExportButton from '@/components/ExportButton'
 import LanguageSelector from '@/components/LanguageSelector'
+import BugReportButton from '@/components/BugReportButton'
 import { useLanguage } from '@/components/LanguageProvider'
 // import Header from '@/components/Header' // Temporariamente desabilitado
 import { CalendarSkeleton } from '@/components/Skeleton'
@@ -337,6 +338,9 @@ export default function HomePage() {
             userTeams={userTeams}
           />
         )}
+
+        {/* Bug Report Button */}
+        <BugReportButton />
       </div>
     </div>
   )

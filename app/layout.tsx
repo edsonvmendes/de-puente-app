@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import './globals.css'
 import { ToastProvider } from '@/components/ToastProvider'
 import { LanguageProvider } from '@/components/LanguageProvider'
+import Footer from '@/components/Footer'
 
 export const metadata: Metadata = {
   title: 'DE PUENTE - Gestión de Ausencias',
@@ -18,9 +19,12 @@ export default function RootLayout({
 }) {
   return (
     <html lang="es">
-      <body className="bg-gray-50 min-h-screen transition-colors">
+      <body className="bg-gray-50 min-h-screen flex flex-col transition-colors">
         <LanguageProvider>
-          {children}
+          <div className="flex-1 flex flex-col">
+            {children}
+          </div>
+          <Footer />
           <ToastProvider />
         </LanguageProvider>
       </body>
