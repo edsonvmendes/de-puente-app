@@ -16,70 +16,70 @@ const translations = {
     'app.title': 'DE PUENTE',
     'button.admin': 'Admin',
     'button.logout': 'Sair',
-    'button.summary': 'Resumen',
-    'button.export': 'Exportar a Excel',
-    'button.mark_absence': 'Marcar ausencia',
+    'button.summary': 'Resumo',
+    'button.export': 'Exportar para Excel',
+    'button.mark_absence': 'Marcar Ausência',
     
     // Calendar
-    'calendar.today': 'Hoy',
-    'calendar.month': 'Mes',
+    'calendar.today': 'Hoje',
+    'calendar.month': 'Mês',
     'calendar.week': 'Semana',
-    'calendar.filter_teams': 'Filtrar por equipo:',
-    'calendar.my_teams': 'Mis equipos',
+    'calendar.filter_teams': 'Filtrar por equipe:',
+    'calendar.my_teams': 'Minhas equipes',
     
     // Absence types
-    'absence.vacaciones': 'Vacaciones',
-    'absence.dia_libre': 'Día libre',
-    'absence.viaje': 'Viaje',
-    'absence.baja_medica': 'Baja médica',
+    'absence.vacaciones': 'Férias',
+    'absence.dia_libre': 'Dia Livre',
+    'absence.viaje': 'Viagem',
+    'absence.baja_medica': 'Atestado Médico',
     
     // Modal
-    'modal.create_absence': 'Marcar ausencia',
-    'modal.type': 'Tipo de ausencia',
-    'modal.team': 'Equipo',
-    'modal.select_team': 'Selecciona un equipo',
-    'modal.from': 'Desde',
-    'modal.to': 'Hasta',
+    'modal.create_absence': 'Marcar Ausência',
+    'modal.type': 'Tipo de Ausência',
+    'modal.team': 'Equipe',
+    'modal.select_team': 'Selecione uma equipe',
+    'modal.from': 'De',
+    'modal.to': 'Até',
     'modal.note': 'Nota (opcional)',
-    'modal.quick_actions': 'Acciones rápidas',
-    'modal.today_only': 'Solo hoy',
-    'modal.whole_week': 'Toda la semana',
+    'modal.quick_actions': 'Ações Rápidas',
+    'modal.today_only': 'Apenas Hoje',
+    'modal.whole_week': 'Semana Inteira',
     'modal.cancel': 'Cancelar',
-    'modal.save': 'Guardar y disfrutar',
+    'modal.save': 'Salvar e Aproveitar',
     
     // Toast messages
-    'toast.absence_created': '¡Ausencia creada con éxito!',
-    'toast.absence_updated': '¡Ausencia actualizada!',
-    'toast.absence_deleted': 'Ausencia eliminada',
-    'toast.session_closed': 'Sesión cerrada',
-    'toast.error': 'Error',
+    'toast.absence_created': 'Ausência criada com sucesso!',
+    'toast.absence_updated': 'Ausência atualizada!',
+    'toast.absence_deleted': 'Ausência deletada',
+    'toast.session_closed': 'Sessão encerrada',
+    'toast.error': 'Erro',
     
     // Empty states
-    'empty.no_teams': 'No tienes equipos asignados',
-    'empty.no_teams_desc': 'Contacta con el administrador para que te añada a un equipo',
-    'empty.no_absences': 'No hay ausencias este mes',
-    'empty.no_absences_desc': 'Aún no se han registrado ausencias',
+    'empty.no_teams': 'Você não tem equipes atribuídas',
+    'empty.no_teams_desc': 'Entre em contato com o administrador para ser adicionado a uma equipe',
+    'empty.no_absences': 'Não há ausências este mês',
+    'empty.no_absences_desc': 'Ainda não foram registradas ausências',
     
     // Summary
-    'summary.title': 'Resumen de Ausencias',
-    'summary.back': 'Volver al calendario',
-    'summary.total_absences': 'Total Ausencias',
-    'summary.business_days': 'Días Laborables',
-    'summary.avg_per_person': 'Promedio por Persona',
-    'summary.most_used': 'Tipo Más Usado',
-    'summary.by_type': 'Ausencias por Tipo',
-    'summary.by_person': 'Ausencias por Persona',
-    'summary.person': 'Persona',
-    'summary.absences': 'Ausencias',
+    'summary.title': 'Resumo de Ausências',
+    'summary.back': 'Voltar ao Calendário',
+    'summary.total_absences': 'Total de Ausências',
+    'summary.business_days': 'Dias Úteis',
+    'summary.avg_per_person': 'Média por Pessoa',
+    'summary.most_used': 'Tipo Mais Usado',
+    'summary.by_type': 'Ausências por Tipo',
+    'summary.by_person': 'Ausências por Pessoa',
+    'summary.person': 'Pessoa',
+    'summary.absences': 'Ausências',
     
     // Admin
-    'admin.title': 'Admin Console',
-    'admin.people': 'Personas',
-    'admin.teams': 'Equipos',
-    'admin.holidays': 'Festivos',
-    'admin.invite': 'Invitar Persona',
-    'admin.create_team': 'Crear Equipo',
-    'admin.create_holiday': 'Crear Festivo',
+    'admin.title': 'Console de Administração',
+    'admin.people': 'Pessoas',
+    'admin.teams': 'Equipes',
+    'admin.holidays': 'Feriados',
+    'admin.invite': 'Convidar Pessoa',
+    'admin.create_team': 'Criar Equipe',
+    'admin.create_holiday': 'Criar Feriado',
   },
   en: {
     // Header
@@ -226,7 +226,7 @@ const translations = {
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined)
 
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
-  const [language, setLanguageState] = useState<Language>('pt')
+  const [language, setLanguageState] = useState<Language>('es')
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
