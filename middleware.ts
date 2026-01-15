@@ -63,6 +63,21 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL('/login', request.url))
   }
 
+  // Si está autenticado, verificar si está activo
+  if (user && !request.nextUrl.pathname.startsWith('/login') && !request.nextUrl.pathname.startsWith('/auth')) {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('active')
+      .eq('id', user.id)
+      .single()
+    
+    // Si el usuario está inactivo, hacer logout y redirigir
+    if (profile && profile.active === false) {
+      await supabase.auth.signOut()
+      return NextResponse.redirect(new URL('/login?error=inactive', request.url))
+    }
+  }
+
   // Si está autenticado y está en /login, redirigir a home
   if (user && request.nextUrl.pathname === '/login') {
     return NextResponse.redirect(new URL('/', request.url))
