@@ -67,7 +67,7 @@ export default function ResumenPage() {
     // Como la view retorna la misma ausencia múltiples veces (una por equipo),
     // deduplicamos para calcular estadísticas correctas
     const uniqueAbsences = absences.reduce((acc, absence) => {
-      if (!acc.find(a => a.id === absence.id)) {
+      if (!acc.find((a: any) => a.id === absence.id)) {
         acc.push(absence)
       }
       return acc

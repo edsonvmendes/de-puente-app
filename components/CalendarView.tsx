@@ -69,7 +69,7 @@ export default function CalendarView({
     // precisamos agrupar por ID para evitar duplicatas no calendário
     const uniqueAbsences = absences.reduce((acc, absence) => {
       // Se já temos essa ausência (mesmo id), não adicionar novamente
-      if (!acc.find(a => a.id === absence.id)) {
+      if (!acc.find((a: any) => a.id === absence.id)) {
         acc.push(absence)
       }
       return acc

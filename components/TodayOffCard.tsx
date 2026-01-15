@@ -12,7 +12,7 @@ export default function TodayOffCard({ absences }: TodayOffCardProps) {
   // Como a view retorna a mesma ausência múltiplas vezes (uma por equipo),
   // precisamos agrupar por ID para evitar duplicatas
   const uniqueAbsences = absences.reduce((acc, absence) => {
-    if (!acc.find(a => a.id === absence.id)) {
+    if (!acc.find((a: any) => a.id === absence.id)) {
       acc.push(absence)
     }
     return acc
