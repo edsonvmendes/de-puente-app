@@ -6,12 +6,42 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
 
+// Simple in-memory rate limiting (melhorar com Redis em produção)
+const requestLog = new Map<string, number[]>()
+const RATE_LIMIT_WINDOW = 60 * 60 * 1000 // 1 hora
+const MAX_REQUESTS_PER_WINDOW = 5 // Máximo 5 requests por hora
+
+function checkRateLimit(identifier: string): boolean {
+  const now = Date.now()
+  const requests = requestLog.get(identifier) || []
+  
+  // Limpar requests antigos
+  const recentRequests = requests.filter(time => now - time < RATE_LIMIT_WINDOW)
+  
+  if (recentRequests.length >= MAX_REQUESTS_PER_WINDOW) {
+    return false // Rate limit exceeded
+  }
+  
+  recentRequests.push(now)
+  requestLog.set(identifier, recentRequests)
+  return true
+}
+
 export async function GET(request: Request) {
   try {
     // Verificar authorization header (segurança do cron)
     const authHeader = request.headers.get('authorization')
     if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    // Rate limiting
+    const ip = request.headers.get('x-forwarded-for') || 'unknown'
+    if (!checkRateLimit(ip)) {
+      return NextResponse.json(
+        { error: 'Rate limit exceeded. Max 5 requests per hour.' },
+        { status: 429 }
+      )
     }
 
     // Verificar se emails diários estão habilitados
