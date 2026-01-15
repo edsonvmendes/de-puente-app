@@ -21,7 +21,15 @@ import { motion } from 'framer-motion'
 export default function HomePage() {
   const router = useRouter()
   const supabase = createClient()
-  const { t } = useLanguage()
+  
+  // Safe language hook (pode falhar durante SSR)
+  let t = (key: string) => key
+  try {
+    const lang = useLanguage()
+    t = lang.t
+  } catch (e) {
+    // Durante SSR, usar fallback
+  }
 
   const [user, setUser] = useState<any>(null)
   const [profile, setProfile] = useState<any>(null)

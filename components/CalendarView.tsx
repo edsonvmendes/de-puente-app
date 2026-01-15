@@ -34,7 +34,15 @@ export default function CalendarView({
   onEventClick,
   onDateSelect
 }: CalendarViewProps) {
-  const { language } = useLanguage()
+  // Safe language hook
+  let language: 'pt' | 'es' | 'en' = 'es'
+  try {
+    const lang = useLanguage()
+    language = lang.language
+  } catch (e) {
+    // Durante SSR
+  }
+  
   const [events, setEvents] = useState<CalendarEvent[]>([])
 
   // Mapear idioma para locale do FullCalendar
