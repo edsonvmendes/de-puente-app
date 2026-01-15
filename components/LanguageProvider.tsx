@@ -226,11 +226,11 @@ const translations = {
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined)
 
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
+  // Inicializar com 'es' como padrão (funciona no SSR)
   const [language, setLanguageState] = useState<Language>('es')
-  const [mounted, setMounted] = useState(false)
 
+  // Carregar preferência do localStorage apenas no cliente
   useEffect(() => {
-    setMounted(true)
     const savedLang = localStorage.getItem('language') as Language | null
     if (savedLang && (savedLang === 'pt' || savedLang === 'en' || savedLang === 'es')) {
       setLanguageState(savedLang)
@@ -239,17 +239,16 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
 
   const setLanguage = (lang: Language) => {
     setLanguageState(lang)
-    localStorage.setItem('language', lang)
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('language', lang)
+    }
   }
 
   const t = (key: string): string => {
     return translations[language][key as keyof typeof translations['pt']] || key
   }
 
-  if (!mounted) {
-    return <>{children}</>
-  }
-
+  // SEMPRE fornecer o Provider, mesmo durante SSR
   return (
     <LanguageContext.Provider value={{ language, setLanguage, t }}>
       {children}
