@@ -78,7 +78,6 @@ export default function AdminPage() {
       loadData()
       loadSettings()
     }
-    }
   }, [isAdminUser, activeTab])
 
   // Helper para cores de categoria
