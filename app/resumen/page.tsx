@@ -63,13 +63,23 @@ export default function ResumenPage() {
   }
 
   function calculateStats(absences: any[]) {
+    // DEDUPLICAR ausencias por ID
+    // Como la view retorna la misma ausencia múltiples veces (una por equipo),
+    // deduplicamos para calcular estadísticas correctas
+    const uniqueAbsences = absences.reduce((acc, absence) => {
+      if (!acc.find(a => a.id === absence.id)) {
+        acc.push(absence)
+      }
+      return acc
+    }, [] as any[])
+
     const byType: { [key: string]: number } = {}
     const byPerson: { [key: string]: { name: string; count: number; days: number } } = {}
     const byMonth: { [key: string]: number } = {}
     
     let totalDays = 0
 
-    absences.forEach(absence => {
+    uniqueAbsences.forEach(absence => {
       // Por tipo
       byType[absence.type] = (byType[absence.type] || 0) + 1
 
@@ -77,7 +87,7 @@ export default function ResumenPage() {
       const personKey = absence.profile_id
       if (!byPerson[personKey]) {
         byPerson[personKey] = {
-          name: absence.profiles?.full_name || 'Usuario',
+          name: absence.full_name || 'Usuario',
           count: 0,
           days: 0
         }
@@ -92,7 +102,7 @@ export default function ResumenPage() {
     })
 
     setStats({
-      totalAbsences: absences.length,
+      totalAbsences: uniqueAbsences.length,
       totalDays,
       byType,
       byPerson: Object.values(byPerson).sort((a, b) => b.days - a.days),

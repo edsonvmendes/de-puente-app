@@ -64,8 +64,19 @@ export default function CalendarView({
   const currentButtonText = buttonTexts[language] || buttonTexts.es
 
   useEffect(() => {
-    // Convertir ausencias a eventos
-    const absenceEvents: CalendarEvent[] = absences.map(absence => {
+    // DEDUPLICAR ausências por ID
+    // Como a view retorna a mesma ausência múltiplas vezes (uma por equipo),
+    // precisamos agrupar por ID para evitar duplicatas no calendário
+    const uniqueAbsences = absences.reduce((acc, absence) => {
+      // Se já temos essa ausência (mesmo id), não adicionar novamente
+      if (!acc.find(a => a.id === absence.id)) {
+        acc.push(absence)
+      }
+      return acc
+    }, [] as any[])
+
+    // Convertir ausencias únicas a eventos
+    const absenceEvents: CalendarEvent[] = uniqueAbsences.map(absence => {
       const info = getAbsenceInfo(absence.type)
       
       return {

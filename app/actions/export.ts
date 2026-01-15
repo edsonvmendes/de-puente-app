@@ -30,6 +30,16 @@ export async function exportAbsencesToExcel(params: ExportParams) {
     return { error: error?.message || 'Error al obtener datos' }
   }
 
+  // DEDUPLICAR ausencias por ID
+  // Como la view retorna la misma ausencia múltiples veces (una por equipo),
+  // deduplicamos para evitar duplicatas en el Excel
+  const uniqueAbsences = absences.reduce((acc: any[], absence: any) => {
+    if (!acc.find(a => a.id === absence.id)) {
+      acc.push(absence)
+    }
+    return acc
+  }, [])
+
   // Crear libro Excel
   const workbook = new ExcelJS.Workbook()
   const worksheet = workbook.addWorksheet('Ausencias')
@@ -64,7 +74,7 @@ export async function exportAbsencesToExcel(params: ExportParams) {
   }
 
   // Agregar datos
-  absences.forEach((absence: any) => {
+  uniqueAbsences.forEach((absence: any) => {
     worksheet.addRow({
       usuario: absence.full_name,
       email: absence.email,
@@ -89,8 +99,8 @@ export async function exportAbsencesToExcel(params: ExportParams) {
     fgColor: { argb: 'FFF3F4F6' }
   }
 
-  // Calcular total de días laborables
-  const totalDays = absences.reduce((sum: number, a: any) => sum + (a.business_days || 0), 0)
+  // Calcular total de días laborables (usando uniqueAbsences)
+  const totalDays = uniqueAbsences.reduce((sum: number, a: any) => sum + (a.business_days || 0), 0)
   worksheet.addRow(['Total días laborables:', '', '', '', '', '', totalDays, ''])
 
   // Generar buffer

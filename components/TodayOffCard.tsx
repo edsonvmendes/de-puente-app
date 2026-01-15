@@ -8,11 +8,21 @@ interface TodayOffCardProps {
 }
 
 export default function TodayOffCard({ absences }: TodayOffCardProps) {
+  // DEDUPLICAR ausências por ID primeiro
+  // Como a view retorna a mesma ausência múltiplas vezes (uma por equipo),
+  // precisamos agrupar por ID para evitar duplicatas
+  const uniqueAbsences = absences.reduce((acc, absence) => {
+    if (!acc.find(a => a.id === absence.id)) {
+      acc.push(absence)
+    }
+    return acc
+  }, [] as any[])
+
   // Filtrar ausencias que incluyen hoy
   const today = new Date()
   const todayStr = today.toISOString().split('T')[0]
   
-  const todayAbsences = absences.filter(absence => {
+  const todayAbsences = uniqueAbsences.filter(absence => {
     const start = new Date(absence.start_date)
     const end = new Date(absence.end_date)
     return start <= today && end >= today
