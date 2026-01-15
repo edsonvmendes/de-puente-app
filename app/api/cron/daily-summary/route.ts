@@ -14,6 +14,20 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    // Verificar se emails diários estão habilitados
+    const { data: setting } = await supabase
+      .from('settings')
+      .select('value')
+      .eq('key', 'daily_email_enabled')
+      .single()
+
+    if (!setting || setting.value === false) {
+      return NextResponse.json({ 
+        message: 'Daily emails disabled by admin',
+        enabled: false
+      })
+    }
+
     // Verificar se é dia útil (seg-sex)
     const today = new Date()
     const dayOfWeek = today.getDay() // 0=domingo, 6=sábado

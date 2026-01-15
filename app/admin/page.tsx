@@ -64,6 +64,9 @@ export default function AdminPage() {
   const [holidayStart, setHolidayStart] = useState('')
   const [holidayEnd, setHolidayEnd] = useState('')
 
+  // Settings
+  const [dailyEmailEnabled, setDailyEmailEnabled] = useState(true)
+
   useEffect(() => {
     checkAdmin()
   }, [])
@@ -73,6 +76,8 @@ export default function AdminPage() {
     if (isAdminUser) {
       console.log('Calling loadData...')
       loadData()
+      loadSettings()
+    }
     }
   }, [isAdminUser, activeTab])
 
@@ -111,6 +116,39 @@ export default function AdminPage() {
     }
     setIsAdminUser(true)
     setLoading(false)
+  }
+
+  async function loadSettings() {
+    const supabase = createClient()
+    const { data } = await supabase
+      .from('settings')
+      .select('value')
+      .eq('key', 'daily_email_enabled')
+      .single()
+    
+    if (data) {
+      setDailyEmailEnabled(data.value)
+    }
+  }
+
+  async function toggleDailyEmail() {
+    const supabase = createClient()
+    const newValue = !dailyEmailEnabled
+    
+    const { error } = await supabase
+      .from('settings')
+      .update({ 
+        value: newValue,
+        updated_at: new Date().toISOString()
+      })
+      .eq('key', 'daily_email_enabled')
+    
+    if (!error) {
+      setDailyEmailEnabled(newValue)
+      alert(`Emails diarios ${newValue ? 'activados' : 'desactivados'}`)
+    } else {
+      alert(`Error: ${error.message}`)
+    }
   }
 
   async function loadData() {
@@ -397,7 +435,31 @@ export default function AdminPage() {
       <div className="bg-white shadow">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-bold text-gray-900">Admin Console</h1>
+            <div className="flex items-center gap-6">
+              <h1 className="text-2xl font-bold text-gray-900">Admin Console</h1>
+              
+              {/* Daily Email Toggle */}
+              <div className="flex items-center gap-3 px-4 py-2 bg-gray-50 rounded-lg border border-gray-200">
+                <Mail size={18} className={dailyEmailEnabled ? "text-blue-600" : "text-gray-400"} />
+                <span className="text-sm font-medium text-gray-700">Emails Diarios:</span>
+                <button
+                  onClick={toggleDailyEmail}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                    dailyEmailEnabled ? 'bg-blue-600' : 'bg-gray-300'
+                  }`}
+                >
+                  <span
+                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                      dailyEmailEnabled ? 'translate-x-6' : 'translate-x-1'
+                    }`}
+                  />
+                </button>
+                <span className={`text-sm font-semibold ${dailyEmailEnabled ? 'text-blue-600' : 'text-gray-400'}`}>
+                  {dailyEmailEnabled ? 'ON' : 'OFF'}
+                </span>
+              </div>
+            </div>
+            
             <button
               onClick={() => router.push('/')}
               className="text-gray-600 hover:text-gray-900"
