@@ -18,7 +18,7 @@ import {
   deleteTeam,
   toggleUserStatus
 } from '@/app/actions/admin'
-import { Users, Building2, Calendar, X, Plus, Trash2, Edit2, MoreVertical, UserCog, UserPlus, Shield } from 'lucide-react'
+import { Users, Building2, Calendar, X, Plus, Trash2, Edit2, MoreVertical, UserCog, UserPlus, Shield, Mail, MailOff } from 'lucide-react'
 
 type Tab = 'people' | 'teams' | 'holidays'
 
@@ -302,6 +302,22 @@ export default function AdminPage() {
     }
   }
 
+  async function handleToggleDailyEmail(userId: string, currentValue: boolean) {
+    const supabase = createClient()
+    const { error } = await supabase
+      .from('profiles')
+      .update({ daily_email: !currentValue })
+      .eq('id', userId)
+    
+    if (!error) {
+      await loadData()
+      const msg = currentValue ? 'desactivado' : 'activado'
+      alert(`Email diario ${msg}`)
+    } else {
+      alert(`Error: ${error.message}`)
+    }
+  }
+
   // === TEAMS MANAGEMENT ===
 
   async function handleUpdateTeam() {
@@ -547,6 +563,13 @@ export default function AdminPage() {
                             >
                               <UserCog size={18} />
                             </button>
+                            <button
+                              onClick={() => handleToggleDailyEmail(person.id, person.daily_email !== false)}
+                              className={person.daily_email !== false ? "text-blue-600 hover:text-blue-900" : "text-gray-400 hover:text-gray-600"}
+                              title={person.daily_email !== false ? "Email diario activado (click para desactivar)" : "Email diario desactivado (click para activar)"}
+                            >
+                              {person.daily_email !== false ? <Mail size={18} /> : <MailOff size={18} />}
+                            </button>
                           </div>
                         </td>
                       </tr>
@@ -689,7 +712,7 @@ export default function AdminPage() {
                     {holidays.map((holiday) => (
                       <tr key={holiday.id}>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                          🎉 {holiday.name}
+                          🎉 {holiday.name || 'Sin nombre'}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                           {new Date(holiday.start_date).toLocaleDateString('es-ES')}
