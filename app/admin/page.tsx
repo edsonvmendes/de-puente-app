@@ -46,11 +46,14 @@ export default function AdminPage() {
   const [teams, setTeams] = useState<any[]>([])
   const [showTeamModal, setShowTeamModal] = useState(false)
   const [teamName, setTeamName] = useState('')
+  const [teamCategory, setTeamCategory] = useState<'departamento' | 'proyecto' | 'funcional'>('departamento')
+  const [categoryFilter, setCategoryFilter] = useState<string>('all')
   
   // Teams management modals
   const [showEditTeamModal, setShowEditTeamModal] = useState(false)
   const [selectedTeam, setSelectedTeam] = useState<any>(null)
   const [editTeamName, setEditTeamName] = useState('')
+  const [editTeamCategory, setEditTeamCategory] = useState<'departamento' | 'proyecto' | 'funcional'>('departamento')
   const [showTeamMembersModal, setShowTeamMembersModal] = useState(false)
   const [teamMembers, setTeamMembers] = useState<any[]>([])
 
@@ -72,6 +75,33 @@ export default function AdminPage() {
       loadData()
     }
   }, [isAdminUser, activeTab])
+
+  // Helper para cores de categoria
+  const getCategoryBadge = (category: string) => {
+    switch (category) {
+      case 'departamento':
+        return 'bg-blue-100 text-blue-800'
+      case 'proyecto':
+        return 'bg-green-100 text-green-800'
+      case 'funcional':
+        return 'bg-purple-100 text-purple-800'
+      default:
+        return 'bg-gray-100 text-gray-800'
+    }
+  }
+
+  const getCategoryLabel = (category: string) => {
+    switch (category) {
+      case 'departamento':
+        return '🏢 Departamento'
+      case 'proyecto':
+        return '📋 Proyecto'
+      case 'funcional':
+        return '⚡ Equipo Funcional'
+      default:
+        return category
+    }
+  }
 
   async function checkAdmin() {
     const result = await isAdmin()
@@ -185,11 +215,12 @@ export default function AdminPage() {
   async function handleCreateTeam() {
     if (!teamName) return
     
-    const result = await createTeam(teamName)
+    const result = await createTeam(teamName, teamCategory)
     
     if (!result.error) {
       setShowTeamModal(false)
       setTeamName('')
+      setTeamCategory('departamento')
       // Recarregar dados
       await loadData()
       alert('Equipo creado con éxito')
@@ -276,11 +307,12 @@ export default function AdminPage() {
   async function handleUpdateTeam() {
     if (!selectedTeam || !editTeamName) return
     
-    const result = await updateTeam(selectedTeam.id, editTeamName)
+    const result = await updateTeam(selectedTeam.id, editTeamName, editTeamCategory)
     if (!result.error) {
       setShowEditTeamModal(false)
       setSelectedTeam(null)
       setEditTeamName('')
+      setEditTeamCategory('departamento')
       await loadData()
       alert('Equipo actualizado')
     } else {
@@ -529,7 +561,51 @@ export default function AdminPage() {
           {activeTab === 'teams' && (
             <div className="p-6">
               <div className="flex justify-between items-center mb-6">
-                <h2 className="text-lg font-semibold">Gestión de Equipos</h2>
+                <div>
+                  <h2 className="text-lg font-semibold mb-3">Gestión de Equipos</h2>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => setCategoryFilter('all')}
+                      className={`px-3 py-1 rounded-md text-sm ${
+                        categoryFilter === 'all'
+                          ? 'bg-gray-800 text-white'
+                          : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                      }`}
+                    >
+                      Todos
+                    </button>
+                    <button
+                      onClick={() => setCategoryFilter('departamento')}
+                      className={`px-3 py-1 rounded-md text-sm ${
+                        categoryFilter === 'departamento'
+                          ? 'bg-blue-600 text-white'
+                          : 'bg-blue-100 text-blue-700 hover:bg-blue-200'
+                      }`}
+                    >
+                      🏢 Departamento
+                    </button>
+                    <button
+                      onClick={() => setCategoryFilter('proyecto')}
+                      className={`px-3 py-1 rounded-md text-sm ${
+                        categoryFilter === 'proyecto'
+                          ? 'bg-green-600 text-white'
+                          : 'bg-green-100 text-green-700 hover:bg-green-200'
+                      }`}
+                    >
+                      📋 Proyecto
+                    </button>
+                    <button
+                      onClick={() => setCategoryFilter('funcional')}
+                      className={`px-3 py-1 rounded-md text-sm ${
+                        categoryFilter === 'funcional'
+                          ? 'bg-purple-600 text-white'
+                          : 'bg-purple-100 text-purple-700 hover:bg-purple-200'
+                      }`}
+                    >
+                      ⚡ Funcional
+                    </button>
+                  </div>
+                </div>
                 <button
                   onClick={() => setShowTeamModal(true)}
                   className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
@@ -540,15 +616,23 @@ export default function AdminPage() {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {teams.map((team) => (
+                {teams
+                  .filter(team => categoryFilter === 'all' || team.category === categoryFilter)
+                  .map((team) => (
                   <div key={team.id} className="border rounded-lg p-4 hover:shadow-md transition-shadow relative">
                     <div className="flex justify-between items-start mb-2">
-                      <h3 className="font-semibold text-lg">{team.name}</h3>
+                      <div>
+                        <h3 className="font-semibold text-lg">{team.name}</h3>
+                        <span className={`inline-block px-2 py-1 text-xs rounded-full mt-1 ${getCategoryBadge(team.category || 'departamento')}`}>
+                          {getCategoryLabel(team.category || 'departamento')}
+                        </span>
+                      </div>
                       <div className="flex gap-2">
                         <button
                           onClick={() => {
                             setSelectedTeam(team)
                             setEditTeamName(team.name)
+                            setEditTeamCategory(team.category || 'departamento')
                             setShowEditTeamModal(true)
                           }}
                           className="text-blue-600 hover:text-blue-800"
@@ -709,6 +793,19 @@ export default function AdminPage() {
                   className="w-full px-3 py-2 border border-gray-300 rounded-md"
                   placeholder="Equipo Marketing"
                 />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Categoría</label>
+                <select
+                  value={teamCategory}
+                  onChange={(e) => setTeamCategory(e.target.value as any)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                >
+                  <option value="departamento">🏢 Departamento</option>
+                  <option value="proyecto">📋 Proyecto</option>
+                  <option value="funcional">⚡ Equipo Funcional</option>
+                </select>
               </div>
 
               <div className="flex gap-3 pt-4">
@@ -916,6 +1013,19 @@ export default function AdminPage() {
                   className="w-full px-3 py-2 border border-gray-300 rounded-md"
                   placeholder="Nombre del equipo"
                 />
+              </div>
+
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">Categoría</label>
+                <select
+                  value={editTeamCategory}
+                  onChange={(e) => setEditTeamCategory(e.target.value as any)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                >
+                  <option value="departamento">🏢 Departamento</option>
+                  <option value="proyecto">📋 Proyecto</option>
+                  <option value="funcional">⚡ Equipo Funcional</option>
+                </select>
               </div>
 
               <div className="flex gap-3">

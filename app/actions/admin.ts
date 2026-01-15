@@ -144,7 +144,7 @@ export async function updateUserRole(userId: string, role: 'admin' | 'member') {
 /**
  * Crear equipo
  */
-export async function createTeam(name: string) {
+export async function createTeam(name: string, category: string = 'departamento') {
   const admin = await isAdmin()
   if (!admin.isAdmin) {
     return { error: 'No autorizado' }
@@ -154,7 +154,7 @@ export async function createTeam(name: string) {
 
   const { data, error } = await supabase
     .from('teams')
-    .insert({ name })
+    .insert({ name, category })
     .select()
     .single()
 
@@ -169,7 +169,7 @@ export async function createTeam(name: string) {
 /**
  * Actualizar equipo
  */
-export async function updateTeam(id: string, name: string) {
+export async function updateTeam(id: string, name: string, category?: string) {
   const admin = await isAdmin()
   if (!admin.isAdmin) {
     return { error: 'No autorizado' }
@@ -177,9 +177,14 @@ export async function updateTeam(id: string, name: string) {
 
   const supabase = await createServerClient()
 
+  const updateData: any = { name }
+  if (category) {
+    updateData.category = category
+  }
+
   const { data, error } = await supabase
     .from('teams')
-    .update({ name })
+    .update(updateData)
     .eq('id', id)
     .select()
     .single()
