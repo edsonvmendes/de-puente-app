@@ -488,8 +488,19 @@ export default function AdminPage() {
                               <Shield size={18} />
                             </button>
                             <button
-                              onClick={() => {
+                              onClick={async () => {
                                 setSelectedPerson(person)
+                                // Carregar teams se ainda não foram carregados
+                                if (teams.length === 0) {
+                                  const supabase = createClient()
+                                  const { data: teamsData } = await supabase
+                                    .from('teams')
+                                    .select('*')
+                                    .order('name')
+                                  if (teamsData) {
+                                    setTeams(teamsData)
+                                  }
+                                }
                                 setShowAddToTeamModal(true)
                               }}
                               className="text-blue-600 hover:text-blue-900"
@@ -851,12 +862,18 @@ export default function AdminPage() {
                   value={selectedTeamId}
                   onChange={(e) => setSelectedTeamId(e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                  disabled={teams.length === 0}
                 >
-                  <option value="">Seleccionar equipo</option>
+                  <option value="">
+                    {teams.length === 0 ? 'Cargando equipos...' : 'Seleccionar equipo'}
+                  </option>
                   {teams.map((team) => (
                     <option key={team.id} value={team.id}>{team.name}</option>
                   ))}
                 </select>
+                {teams.length === 0 && (
+                  <p className="mt-2 text-sm text-gray-500">No hay equipos disponibles</p>
+                )}
               </div>
 
               <div className="flex gap-3">
