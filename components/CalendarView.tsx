@@ -76,7 +76,7 @@ export default function CalendarView({
     }, [] as any[])
 
     // Convertir ausencias únicas a eventos
-    const absenceEvents: CalendarEvent[] = uniqueAbsences.map(absence => {
+    const absenceEvents: CalendarEvent[] = uniqueAbsences.map((absence: any) => {
       const info = getAbsenceInfo(absence.type)
       
       return {
@@ -94,7 +94,7 @@ export default function CalendarView({
     })
 
     // Convertir festivos a eventos
-    const holidayEvents: CalendarEvent[] = holidays.map(holiday => {
+    const holidayEvents: CalendarEvent[] = holidays.map((holiday: any) => {
       return {
         id: holiday.id,
         title: `${HOLIDAY_CONFIG.emoji} ${holiday.title}`,

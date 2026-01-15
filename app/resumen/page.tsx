@@ -79,7 +79,7 @@ export default function ResumenPage() {
     
     let totalDays = 0
 
-    uniqueAbsences.forEach(absence => {
+    uniqueAbsences.forEach((absence: any) => {
       // Por tipo
       byType[absence.type] = (byType[absence.type] || 0) + 1
 

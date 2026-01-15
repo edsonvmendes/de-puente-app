@@ -22,7 +22,7 @@ export default function TodayOffCard({ absences }: TodayOffCardProps) {
   const today = new Date()
   const todayStr = today.toISOString().split('T')[0]
   
-  const todayAbsences = uniqueAbsences.filter(absence => {
+  const todayAbsences = uniqueAbsences.filter((absence: any) => {
     const start = new Date(absence.start_date)
     const end = new Date(absence.end_date)
     return start <= today && end >= today
@@ -38,7 +38,7 @@ export default function TodayOffCard({ absences }: TodayOffCardProps) {
         Hoy están de puente:
       </h3>
       <div className="space-y-2">
-        {todayAbsences.map((absence) => {
+        {todayAbsences.map((absence: any) => {
           const info = getAbsenceInfo(absence.type)
           const isOnlyToday = absence.start_date === todayStr && absence.end_date === todayStr
           const endsToday = absence.end_date === todayStr
