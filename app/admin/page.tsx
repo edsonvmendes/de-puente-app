@@ -18,7 +18,7 @@ import {
   deleteTeam,
   toggleUserStatus
 } from '@/app/actions/admin'
-import { Users, Building2, Calendar, X, Plus, Trash2, Edit2, MoreVertical, UserCog, UserPlus, Shield, Mail, MailOff } from 'lucide-react'
+import { Users, Building2, Calendar, X, Plus, Trash2, Edit2, MoreVertical, UserCog, UserPlus, Shield, Mail } from 'lucide-react'
 
 type Tab = 'people' | 'teams' | 'holidays'
 
@@ -629,7 +629,14 @@ export default function AdminPage() {
                               className={person.daily_email !== false ? "text-blue-600 hover:text-blue-900" : "text-gray-400 hover:text-gray-600"}
                               title={person.daily_email !== false ? "Email diario activado (click para desactivar)" : "Email diario desactivado (click para activar)"}
                             >
-                              {person.daily_email !== false ? <Mail size={18} /> : <MailOff size={18} />}
+                              <div className="relative">
+                                <Mail size={18} />
+                                {person.daily_email === false && (
+                                  <div className="absolute inset-0 flex items-center justify-center">
+                                    <div className="w-5 h-0.5 bg-gray-400 rotate-45"></div>
+                                  </div>
+                                )}
+                              </div>
                             </button>
                           </div>
                         </td>
