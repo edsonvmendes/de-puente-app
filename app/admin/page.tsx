@@ -68,9 +68,43 @@ export default function AdminPage() {
     const supabase = createClient()
     
     if (activeTab === 'people') {
-      console.log('Loading people...')
-      const { data } = await getAllPeople()
-      setPeople(data || [])
+      console.log('Loading people from client...')
+      // Buscar people diretamente via cliente
+      const { data: peopleData, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .order('full_name')
+      
+      console.log('People query result:', { peopleData, error })
+      
+      if (!error && peopleData) {
+        // Para cada pessoa, buscar seus teams
+        const peopleWithTeams = await Promise.all(
+          peopleData.map(async (person) => {
+            const { data: memberships } = await supabase
+              .from('team_memberships')
+              .select(`
+                id,
+                status,
+                team:team_id (
+                  id,
+                  name
+                )
+              `)
+              .eq('profile_id', person.id)
+            
+            return {
+              ...person,
+              team_memberships: memberships || []
+            }
+          })
+        )
+        console.log('People loaded from client:', peopleWithTeams)
+        setPeople(peopleWithTeams)
+      } else {
+        console.error('Error loading people:', error)
+        setPeople([])
+      }
     } else if (activeTab === 'teams') {
       console.log('Loading teams from client...')
       // Buscar teams diretamente via cliente para evitar cache
