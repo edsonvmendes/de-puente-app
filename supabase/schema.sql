@@ -163,6 +163,42 @@ join teams t on t.id = a.team_id;
 alter view absences_with_business_days set (security_invoker = true);
 
 -- ============================================
+-- VISTA: AUSENCIAS EN TODOS LOS EQUIPOS DEL USUARIO
+-- ============================================
+
+-- Nueva view: ausencias aparecen en TODOS los equipos activos del usuario
+-- Cada ausencia se multiplica por los equipos donde el usuario está activo
+-- Ejemplo: 1 ausencia + 3 equipos = 3 registros en la view
+create or replace view absences_all_teams_with_business_days as
+select
+  a.id,
+  a.profile_id,
+  tm.team_id,  -- team_id viene del membership, no de la ausencia
+  a.type,
+  a.start_date,
+  a.end_date,
+  a.note,
+  a.created_at,
+  a.updated_at,
+  p.full_name,
+  p.email,
+  t.name as team_name,
+  count_business_days(a.start_date, a.end_date) as business_days
+from absences a
+join profiles p on p.id = a.profile_id
+join team_memberships tm on tm.profile_id = a.profile_id and tm.status = 'active'
+join teams t on t.id = tm.team_id;
+
+-- Habilitar RLS en la vista
+alter view absences_all_teams_with_business_days set (security_invoker = true);
+
+comment on view absences_all_teams_with_business_days is 
+'Ausencias del usuario en TODOS sus equipos activos. 
+Cada ausencia aparece multiplicada para cada equipo donde el usuario está activo.
+Garantiza que la ausencia sea visible en todos los calendarios de los equipos del usuario.';
+
+
+-- ============================================
 -- HABILITAR RLS
 -- ============================================
 

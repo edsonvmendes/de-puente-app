@@ -179,12 +179,14 @@ export async function getUserActiveTeams() {
 
 /**
  * Obtener ausencias por equipo y rango de fechas
+ * Usa la view absences_all_teams_with_business_days que muestra
+ * las ausencias del usuario en TODOS sus equipos activos
  */
 export async function getAbsences(teamIds: string[], startDate?: string, endDate?: string) {
   const supabase = await createServerClient()
 
   let query = supabase
-    .from('absences_with_business_days')
+    .from('absences_all_teams_with_business_days')
     .select('*')
     .in('team_id', teamIds)
     .order('start_date', { ascending: true })

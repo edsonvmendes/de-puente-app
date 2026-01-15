@@ -11,13 +11,15 @@ interface ExportParams {
 
 /**
  * Exportar ausencias a Excel
+ * Usa la view absences_all_teams_with_business_days que muestra
+ * las ausencias del usuario en TODOS sus equipos activos
  */
 export async function exportAbsencesToExcel(params: ExportParams) {
   const supabase = await createServerClient()
 
   // Obtener datos
   const { data: absences, error } = await supabase
-    .from('absences_with_business_days')
+    .from('absences_all_teams_with_business_days')
     .select('*')
     .in('team_id', params.teamIds)
     .gte('start_date', params.startDate)
