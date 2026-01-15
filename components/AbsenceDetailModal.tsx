@@ -27,7 +27,6 @@ export default function AbsenceDetailModal({
   const [error, setError] = useState('')
 
   // Estados de edición
-  const [editTeam, setEditTeam] = useState(absence?.team_id || '')
   const [editType, setEditType] = useState<AbsenceType>(absence?.type || 'vacaciones')
   const [editStartDate, setEditStartDate] = useState(absence?.start_date || '')
   const [editEndDate, setEditEndDate] = useState(absence?.end_date || '')
@@ -64,7 +63,7 @@ export default function AbsenceDetailModal({
 
     const result = await updateAbsence({
       id: absence.id,
-      teamId: editTeam,
+      teamId: absence.team_id, // ✅ Usa el team_id original, no permite cambio
       type: editType,
       startDate: editStartDate,
       endDate: editEndDate,
@@ -231,24 +230,12 @@ export default function AbsenceDetailModal({
           ) : (
             // Vista de edición
             <>
-              {userTeams.length > 1 && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Equipo
-                  </label>
-                  <select
-                    value={editTeam}
-                    onChange={(e) => setEditTeam(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  >
-                    {userTeams.map(team => (
-                      <option key={team.id} value={team.id}>
-                        {team.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              )}
+              {/* Info: Ausencia aparece en todos los equipos del usuario */}
+              <div className="bg-blue-50 border border-blue-200 rounded-md p-3 mb-4">
+                <p className="text-sm text-blue-800">
+                  ℹ️ Esta ausencia aparece en todos tus equipos automáticamente
+                </p>
+              </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
