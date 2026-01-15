@@ -9,6 +9,7 @@ import CreateAbsenceModal from '@/components/CreateAbsenceModal'
 import AbsenceDetailModal from '@/components/AbsenceDetailModal'
 import TodayOffCard from '@/components/TodayOffCard'
 import ExportButton from '@/components/ExportButton'
+import LanguageSelector from '@/components/LanguageSelector'
 // import Header from '@/components/Header' // Temporariamente desabilitado
 import { CalendarSkeleton } from '@/components/Skeleton'
 import EmptyState from '@/components/EmptyState'
@@ -195,6 +196,7 @@ export default function HomePage() {
           <div className="flex items-center justify-between mb-4">
             <h1 className="text-3xl font-bold text-gray-900 dark:text-white">🌴 DE PUENTE</h1>
             <div className="flex items-center gap-2">
+              <LanguageSelector />
               {profile?.role === 'admin' && (
                 <button
                   onClick={() => router.push('/admin')}

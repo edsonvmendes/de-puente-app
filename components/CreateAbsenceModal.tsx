@@ -19,7 +19,6 @@ export default function CreateAbsenceModal({
   userTeams,
   initialDates
 }: CreateAbsenceModalProps) {
-  const [selectedTeam, setSelectedTeam] = useState('')
   const [selectedType, setSelectedType] = useState<AbsenceType>('vacaciones')
   const [startDate, setStartDate] = useState('')
   const [endDate, setEndDate] = useState('')
@@ -29,11 +28,6 @@ export default function CreateAbsenceModal({
 
   useEffect(() => {
     if (isOpen) {
-      // Auto-seleccionar equipo si solo hay uno
-      if (userTeams.length === 1) {
-        setSelectedTeam(userTeams[0].id)
-      }
-
       // Configurar fechas iniciales
       if (initialDates) {
         setStartDate(formatDateForInput(initialDates.start))
@@ -63,8 +57,8 @@ export default function CreateAbsenceModal({
     e.preventDefault()
     setError('')
 
-    if (!selectedTeam) {
-      setError('Selecciona un equipo')
+    if (userTeams.length === 0) {
+      setError('No tienes equipos asignados')
       return
     }
 
@@ -75,8 +69,9 @@ export default function CreateAbsenceModal({
 
     setIsSubmitting(true)
 
+    // Usar o primeiro team (ausência aparece em todos os teams do usuário)
     const result = await createAbsence({
-      teamId: selectedTeam,
+      teamId: userTeams[0].id,
       type: selectedType,
       startDate,
       endDate,
@@ -121,27 +116,12 @@ export default function CreateAbsenceModal({
             </div>
           )}
 
-          {/* Equipo (solo si hay múltiples) */}
-          {userTeams.length > 1 && (
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Equipo
-              </label>
-              <select
-                value={selectedTeam}
-                onChange={(e) => setSelectedTeam(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                required
-              >
-                <option value="">Selecciona un equipo</option>
-                {userTeams.map(team => (
-                  <option key={team.id} value={team.id}>
-                    {team.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-          )}
+          {/* Info: Ausência aparecerá em todos os seus equipos */}
+          <div className="bg-blue-50 border border-blue-200 rounded-md p-3">
+            <p className="text-sm text-blue-800">
+              ℹ️ Tu ausencia se registrará en todos tus equipos automáticamente
+            </p>
+          </div>
 
           {/* Tipo */}
           <div>

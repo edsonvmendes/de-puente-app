@@ -109,11 +109,8 @@ export default function CalendarView({
         firstDay={1} // Lunes
         weekends={true}
         editable={false}
-        eventTimeFormat={{
-          hour: '2-digit',
-          minute: '2-digit',
-          meridiem: false
-        }}
+        allDaySlot={true}
+        displayEventTime={false}
       />
 
       <style jsx global>{`
@@ -153,6 +150,24 @@ export default function CalendarView({
         
         .fc-daygrid-day.fc-day-today {
           background-color: #eff6ff !important;
+        }
+        
+        /* Fins de semana com hachurado */
+        .fc-day-sat,
+        .fc-day-sun {
+          background: repeating-linear-gradient(
+            45deg,
+            #ffffff,
+            #ffffff 10px,
+            #f9fafb 10px,
+            #f9fafb 20px
+          );
+          opacity: 0.7;
+        }
+        
+        .fc-day-sat .fc-daygrid-day-number,
+        .fc-day-sun .fc-daygrid-day-number {
+          color: #9ca3af;
         }
       `}</style>
     </div>

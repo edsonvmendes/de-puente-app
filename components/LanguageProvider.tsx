@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useEffect, useState } from 'react'
 
-type Language = 'pt' | 'en'
+type Language = 'pt' | 'en' | 'es'
 
 interface LanguageContextType {
   language: Language
@@ -150,6 +150,76 @@ const translations = {
     'admin.invite': 'Invite Person',
     'admin.create_team': 'Create Team',
     'admin.create_holiday': 'Create Holiday',
+  },
+  es: {
+    // Header
+    'app.title': 'DE PUENTE',
+    'button.admin': 'Admin',
+    'button.logout': 'Cerrar Sesión',
+    'button.summary': 'Resumen',
+    'button.export': 'Exportar a Excel',
+    'button.mark_absence': 'Marcar Ausencia',
+    
+    // Calendar
+    'calendar.today': 'Hoy',
+    'calendar.month': 'Mes',
+    'calendar.week': 'Semana',
+    'calendar.filter_teams': 'Filtrar por equipo:',
+    'calendar.my_teams': 'Mis equipos',
+    
+    // Absence types
+    'absence.vacaciones': 'Vacaciones',
+    'absence.dia_libre': 'Día Libre',
+    'absence.viaje': 'Viaje',
+    'absence.baja_medica': 'Baja Médica',
+    
+    // Modal
+    'modal.create_absence': 'Marcar Ausencia',
+    'modal.type': 'Tipo de Ausencia',
+    'modal.team': 'Equipo',
+    'modal.select_team': 'Selecciona un equipo',
+    'modal.from': 'Desde',
+    'modal.to': 'Hasta',
+    'modal.note': 'Nota (opcional)',
+    'modal.quick_actions': 'Acciones Rápidas',
+    'modal.today_only': 'Solo Hoy',
+    'modal.whole_week': 'Toda la Semana',
+    'modal.cancel': 'Cancelar',
+    'modal.save': 'Guardar y Disfrutar',
+    
+    // Toast messages
+    'toast.absence_created': '¡Ausencia creada con éxito!',
+    'toast.absence_updated': '¡Ausencia actualizada!',
+    'toast.absence_deleted': 'Ausencia eliminada',
+    'toast.session_closed': 'Sesión cerrada',
+    'toast.error': 'Error',
+    
+    // Empty states
+    'empty.no_teams': 'No tienes equipos asignados',
+    'empty.no_teams_desc': 'Contacta con el administrador para que te añada a un equipo',
+    'empty.no_absences': 'No hay ausencias este mes',
+    'empty.no_absences_desc': 'Aún no se han registrado ausencias',
+    
+    // Summary
+    'summary.title': 'Resumen de Ausencias',
+    'summary.back': 'Volver al Calendario',
+    'summary.total_absences': 'Total Ausencias',
+    'summary.business_days': 'Días Laborables',
+    'summary.avg_per_person': 'Promedio por Persona',
+    'summary.most_used': 'Tipo Más Usado',
+    'summary.by_type': 'Ausencias por Tipo',
+    'summary.by_person': 'Ausencias por Persona',
+    'summary.person': 'Persona',
+    'summary.absences': 'Ausencias',
+    
+    // Admin
+    'admin.title': 'Consola de Administración',
+    'admin.people': 'Personas',
+    'admin.teams': 'Equipos',
+    'admin.holidays': 'Festivos',
+    'admin.invite': 'Invitar Persona',
+    'admin.create_team': 'Crear Equipo',
+    'admin.create_holiday': 'Crear Festivo',
   }
 }
 
@@ -162,7 +232,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     setMounted(true)
     const savedLang = localStorage.getItem('language') as Language | null
-    if (savedLang && (savedLang === 'pt' || savedLang === 'en')) {
+    if (savedLang && (savedLang === 'pt' || savedLang === 'en' || savedLang === 'es')) {
       setLanguageState(savedLang)
     }
   }, [])
