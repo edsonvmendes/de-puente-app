@@ -48,7 +48,7 @@ export default function HomePage() {
   async function loadInitialData() {
     setIsLoading(true)
 
-    // Verificar autenticación
+    // Verificar autenticação
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) {
       router.push('/login')
@@ -66,8 +66,30 @@ export default function HomePage() {
 
     setProfile(profileData)
 
-    // Cargar equipos del usuario
-    const { data: teams } = await getUserActiveTeams()
+    // Cargar equipos del usuario (DIRETO DO CLIENTE)
+    console.log('Loading teams for user:', user.id)
+    const { data: membershipsData, error: membershipsError } = await supabase
+      .from('team_memberships')
+      .select(`
+        team_id,
+        teams:team_id (
+          id,
+          name,
+          category
+        )
+      `)
+      .eq('profile_id', user.id)
+      .eq('status', 'active')
+
+    console.log('Memberships result:', { membershipsData, membershipsError })
+
+    const teams = (membershipsData || [])
+      .filter(m => m.teams)
+      .map(m => m.teams)
+      .filter(Boolean)
+
+    console.log('Teams extracted:', teams)
+    
     setUserTeams(teams || [])
 
     if (!teams || teams.length === 0) {
