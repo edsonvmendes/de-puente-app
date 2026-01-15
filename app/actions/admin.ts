@@ -395,3 +395,83 @@ export async function getAllTeams() {
 
   return { data: teamsWithCount, error: null }
 }
+
+/**
+ * Remover miembro de equipo
+ */
+export async function removeTeamMember(membershipId: string) {
+  const admin = await isAdmin()
+  if (!admin.isAdmin) {
+    return { error: 'No autorizado' }
+  }
+
+  const supabase = await createServerClient()
+
+  const { error } = await supabase
+    .from('team_memberships')
+    .delete()
+    .eq('id', membershipId)
+
+  if (error) {
+    return { error: error.message }
+  }
+
+  revalidatePath('/admin')
+  return { data: true }
+}
+
+/**
+ * Eliminar equipo
+ */
+export async function deleteTeam(teamId: string) {
+  const admin = await isAdmin()
+  if (!admin.isAdmin) {
+    return { error: 'No autorizado' }
+  }
+
+  const supabase = await createServerClient()
+
+  // Primero eliminar membresías
+  await supabase
+    .from('team_memberships')
+    .delete()
+    .eq('team_id', teamId)
+
+  // Luego eliminar el team
+  const { error } = await supabase
+    .from('teams')
+    .delete()
+    .eq('id', teamId)
+
+  if (error) {
+    return { error: error.message }
+  }
+
+  revalidatePath('/admin')
+  return { data: true }
+}
+
+/**
+ * Desactivar/activar usuario
+ */
+export async function toggleUserStatus(userId: string, currentStatus: boolean) {
+  const admin = await isAdmin()
+  if (!admin.isAdmin) {
+    return { error: 'No autorizado' }
+  }
+
+  const supabase = await createServerClient()
+
+  // Actualizar estado en auth.users (si es posible) y profiles
+  const { error } = await supabase
+    .from('profiles')
+    .update({ active: !currentStatus })
+    .eq('id', userId)
+
+  if (error) {
+    return { error: error.message }
+  }
+
+  revalidatePath('/admin')
+  return { data: true }
+}

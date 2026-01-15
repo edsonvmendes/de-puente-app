@@ -10,9 +10,15 @@ import {
   createTeam, 
   createHoliday,
   getAllPeople,
-  getAllTeams
+  getAllTeams,
+  updateUserRole,
+  addTeamMember,
+  removeTeamMember,
+  updateTeam,
+  deleteTeam,
+  toggleUserStatus
 } from '@/app/actions/admin'
-import { Users, Building2, Calendar, X, Plus, Trash2, Edit2 } from 'lucide-react'
+import { Users, Building2, Calendar, X, Plus, Trash2, Edit2, MoreVertical, UserCog, UserPlus, Shield } from 'lucide-react'
 
 type Tab = 'people' | 'teams' | 'holidays'
 
@@ -28,11 +34,25 @@ export default function AdminPage() {
   const [inviteEmail, setInviteEmail] = useState('')
   const [inviteName, setInviteName] = useState('')
   const [inviteRole, setInviteRole] = useState<'member' | 'admin'>('member')
+  
+  // People management modals
+  const [showRoleModal, setShowRoleModal] = useState(false)
+  const [selectedPerson, setSelectedPerson] = useState<any>(null)
+  const [newRole, setNewRole] = useState<'admin' | 'member'>('member')
+  const [showAddToTeamModal, setShowAddToTeamModal] = useState(false)
+  const [selectedTeamId, setSelectedTeamId] = useState('')
 
   // Teams state
   const [teams, setTeams] = useState<any[]>([])
   const [showTeamModal, setShowTeamModal] = useState(false)
   const [teamName, setTeamName] = useState('')
+  
+  // Teams management modals
+  const [showEditTeamModal, setShowEditTeamModal] = useState(false)
+  const [selectedTeam, setSelectedTeam] = useState<any>(null)
+  const [editTeamName, setEditTeamName] = useState('')
+  const [showTeamMembersModal, setShowTeamMembersModal] = useState(false)
+  const [teamMembers, setTeamMembers] = useState<any[]>([])
 
   // Holidays state
   const [holidays, setHolidays] = useState<any[]>([])
@@ -195,6 +215,114 @@ export default function AdminPage() {
     }
   }
 
+  // === PEOPLE MANAGEMENT ===
+  
+  async function handleChangeRole() {
+    if (!selectedPerson) return
+    
+    const result = await updateUserRole(selectedPerson.id, newRole)
+    if (!result.error) {
+      setShowRoleModal(false)
+      setSelectedPerson(null)
+      await loadData()
+      alert('Rol actualizado con éxito')
+    } else {
+      alert(`Error: ${result.error}`)
+    }
+  }
+
+  async function handleAddToTeam() {
+    if (!selectedPerson || !selectedTeamId) return
+    
+    const result = await addTeamMember(selectedTeamId, selectedPerson.id)
+    if (!result.error) {
+      setShowAddToTeamModal(false)
+      setSelectedPerson(null)
+      setSelectedTeamId('')
+      await loadData()
+      alert('Usuario agregado al equipo')
+    } else {
+      alert(`Error: ${result.error}`)
+    }
+  }
+
+  async function handleRemoveFromTeam(membershipId: string) {
+    if (!confirm('¿Eliminar este miembro del equipo?')) return
+    
+    const result = await removeTeamMember(membershipId)
+    if (!result.error) {
+      await loadData()
+      alert('Miembro eliminado del equipo')
+    } else {
+      alert(`Error: ${result.error}`)
+    }
+  }
+
+  async function handleToggleUserStatus(userId: string, currentStatus: boolean) {
+    const action = currentStatus ? 'desactivar' : 'activar'
+    if (!confirm(`¿Confirmar ${action} este usuario?`)) return
+    
+    const result = await toggleUserStatus(userId, currentStatus)
+    if (!result.error) {
+      await loadData()
+      alert(`Usuario ${action}do`)
+    } else {
+      alert(`Error: ${result.error}`)
+    }
+  }
+
+  // === TEAMS MANAGEMENT ===
+
+  async function handleUpdateTeam() {
+    if (!selectedTeam || !editTeamName) return
+    
+    const result = await updateTeam(selectedTeam.id, editTeamName)
+    if (!result.error) {
+      setShowEditTeamModal(false)
+      setSelectedTeam(null)
+      setEditTeamName('')
+      await loadData()
+      alert('Equipo actualizado')
+    } else {
+      alert(`Error: ${result.error}`)
+    }
+  }
+
+  async function handleDeleteTeam(teamId: string) {
+    if (!confirm('¿Eliminar este equipo? Se eliminarán todas las membresías.')) return
+    
+    const result = await deleteTeam(teamId)
+    if (!result.error) {
+      await loadData()
+      alert('Equipo eliminado')
+    } else {
+      alert(`Error: ${result.error}`)
+    }
+  }
+
+  async function handleViewTeamMembers(team: any) {
+    setSelectedTeam(team)
+    
+    // Cargar membros del team
+    const supabase = createClient()
+    const { data } = await supabase
+      .from('team_memberships')
+      .select(`
+        id,
+        status,
+        profile:profile_id (
+          id,
+          full_name,
+          email
+        )
+      `)
+      .eq('team_id', team.id)
+      .eq('status', 'active')
+    
+    setTeamMembers(data || [])
+    setShowTeamMembersModal(true)
+  }
+
   // Função desabilitada temporariamente - necessita refatoração
   // async function handleToggleMembership(personId: string, teamId: string, currentStatus: string) {
   //   const newStatus = currentStatus === 'active' ? 'inactive' : 'active'
@@ -296,11 +424,12 @@ export default function AdminPage() {
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Rol</th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Equipos</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Acciones</th>
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
                     {people.map((person) => (
-                      <tr key={person.id}>
+                      <tr key={person.id} className="hover:bg-gray-50">
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                           {person.full_name}
                         </td>
@@ -316,8 +445,49 @@ export default function AdminPage() {
                             {person.role}
                           </span>
                         </td>
-                        <td className="px-6 py-4 text-sm text-gray-500">
-                          {person.teams?.length || 0} equipos
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          <div className="flex flex-wrap gap-1">
+                            {person.team_memberships?.map((membership: any) => (
+                              <span key={membership.id} className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded flex items-center gap-1">
+                                {membership.team?.name}
+                                <button
+                                  onClick={() => handleRemoveFromTeam(membership.id)}
+                                  className="hover:text-red-600"
+                                  title="Eliminar del equipo"
+                                >
+                                  <X size={12} />
+                                </button>
+                              </span>
+                            ))}
+                            {(!person.team_memberships || person.team_memberships.length === 0) && (
+                              <span className="text-gray-400 text-xs">Sin equipos</span>
+                            )}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                          <div className="flex items-center gap-2">
+                            <button
+                              onClick={() => {
+                                setSelectedPerson(person)
+                                setNewRole(person.role === 'admin' ? 'member' : 'admin')
+                                setShowRoleModal(true)
+                              }}
+                              className="text-purple-600 hover:text-purple-900"
+                              title="Cambiar rol"
+                            >
+                              <Shield size={18} />
+                            </button>
+                            <button
+                              onClick={() => {
+                                setSelectedPerson(person)
+                                setShowAddToTeamModal(true)
+                              }}
+                              className="text-blue-600 hover:text-blue-900"
+                              title="Agregar a equipo"
+                            >
+                              <UserPlus size={18} />
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     ))}
@@ -343,9 +513,37 @@ export default function AdminPage() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {teams.map((team) => (
-                  <div key={team.id} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
-                    <h3 className="font-semibold text-lg mb-2">{team.name}</h3>
-                    <p className="text-sm text-gray-600">{team.member_count || 0} miembros</p>
+                  <div key={team.id} className="border rounded-lg p-4 hover:shadow-md transition-shadow relative">
+                    <div className="flex justify-between items-start mb-2">
+                      <h3 className="font-semibold text-lg">{team.name}</h3>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => {
+                            setSelectedTeam(team)
+                            setEditTeamName(team.name)
+                            setShowEditTeamModal(true)
+                          }}
+                          className="text-blue-600 hover:text-blue-800"
+                          title="Editar"
+                        >
+                          <Edit2 size={16} />
+                        </button>
+                        <button
+                          onClick={() => handleDeleteTeam(team.id)}
+                          className="text-red-600 hover:text-red-800"
+                          title="Eliminar"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => handleViewTeamMembers(team)}
+                      className="text-sm text-gray-600 hover:text-blue-600 flex items-center gap-1"
+                    >
+                      <Users size={16} />
+                      {team.member_count || 0} miembros
+                    </button>
                   </div>
                 ))}
               </div>
@@ -560,6 +758,194 @@ export default function AdminPage() {
                   className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
                 >
                   Crear
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Change Role Modal */}
+      {showRoleModal && selectedPerson && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg max-w-md w-full mx-4">
+            <div className="p-6">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg font-semibold">Cambiar Rol</h3>
+                <button onClick={() => setShowRoleModal(false)} className="text-gray-400 hover:text-gray-600">
+                  <X size={20} />
+                </button>
+              </div>
+
+              <p className="mb-4 text-sm text-gray-600">
+                Usuario: <strong>{selectedPerson.full_name}</strong>
+              </p>
+
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">Nuevo Rol</label>
+                <select
+                  value={newRole}
+                  onChange={(e) => setNewRole(e.target.value as 'admin' | 'member')}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                >
+                  <option value="member">Member</option>
+                  <option value="admin">Admin</option>
+                </select>
+              </div>
+
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setShowRoleModal(false)}
+                  className="flex-1 px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={handleChangeRole}
+                  className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                >
+                  Cambiar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Add to Team Modal */}
+      {showAddToTeamModal && selectedPerson && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg max-w-md w-full mx-4">
+            <div className="p-6">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg font-semibold">Agregar a Equipo</h3>
+                <button onClick={() => setShowAddToTeamModal(false)} className="text-gray-400 hover:text-gray-600">
+                  <X size={20} />
+                </button>
+              </div>
+
+              <p className="mb-4 text-sm text-gray-600">
+                Usuario: <strong>{selectedPerson.full_name}</strong>
+              </p>
+
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">Equipo</label>
+                <select
+                  value={selectedTeamId}
+                  onChange={(e) => setSelectedTeamId(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                >
+                  <option value="">Seleccionar equipo</option>
+                  {teams.map((team) => (
+                    <option key={team.id} value={team.id}>{team.name}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setShowAddToTeamModal(false)}
+                  className="flex-1 px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={handleAddToTeam}
+                  className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                >
+                  Agregar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Team Modal */}
+      {showEditTeamModal && selectedTeam && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg max-w-md w-full mx-4">
+            <div className="p-6">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg font-semibold">Editar Equipo</h3>
+                <button onClick={() => setShowEditTeamModal(false)} className="text-gray-400 hover:text-gray-600">
+                  <X size={20} />
+                </button>
+              </div>
+
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">Nombre</label>
+                <input
+                  type="text"
+                  value={editTeamName}
+                  onChange={(e) => setEditTeamName(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                  placeholder="Nombre del equipo"
+                />
+              </div>
+
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setShowEditTeamModal(false)}
+                  className="flex-1 px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={handleUpdateTeam}
+                  className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                >
+                  Guardar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Team Members Modal */}
+      {showTeamMembersModal && selectedTeam && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg max-w-2xl w-full mx-4">
+            <div className="p-6">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg font-semibold">Miembros de {selectedTeam.name}</h3>
+                <button onClick={() => setShowTeamMembersModal(false)} className="text-gray-400 hover:text-gray-600">
+                  <X size={20} />
+                </button>
+              </div>
+
+              {teamMembers.length === 0 ? (
+                <p className="text-gray-500 text-center py-8">No hay miembros en este equipo</p>
+              ) : (
+                <div className="space-y-2">
+                  {teamMembers.map((membership: any) => (
+                    <div key={membership.id} className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                      <div>
+                        <p className="font-medium">{membership.profile?.full_name}</p>
+                        <p className="text-sm text-gray-600">{membership.profile?.email}</p>
+                      </div>
+                      <button
+                        onClick={() => {
+                          handleRemoveFromTeam(membership.id)
+                          setShowTeamMembersModal(false)
+                        }}
+                        className="text-red-600 hover:text-red-800"
+                        title="Eliminar"
+                      >
+                        <Trash2 size={18} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              <div className="mt-6">
+                <button
+                  onClick={() => setShowTeamMembersModal(false)}
+                  className="w-full px-4 py-2 bg-gray-200 rounded-md hover:bg-gray-300"
+                >
+                  Cerrar
                 </button>
               </div>
             </div>
